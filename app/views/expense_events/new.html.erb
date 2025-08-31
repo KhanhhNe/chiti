@@ -1,0 +1,38 @@
+<% content_for :title do %>
+  Add event
+<% end %>
+
+<%= form_with model: @event do |form| %>
+  <div>
+    <%= form.label :name, "Event name", class: 'form-label ps-3 fs-6 fw-semibold' %>
+    <%= form.text_field :name, placeholder: 'E.g. City Trip', class: 'form-control' %>
+  </div>
+
+  <div class="mt-4">
+    <%= form.label :participants, "Participants", onclick: "$('#participants-list input').first().focus()", class: 'form-label ps-3 fs-6 fw-semibold' %>
+
+    <div id="participants-list" class="input-group-column">
+      <% if unsafe_participant_names.present? %>
+        <% unsafe_participant_names.each do |participant_name| %>
+          <input class="form-control" name="expense_event[participant_names][]" placeholder="Participant name" value="<%= participant_name %>">
+        <% end %>
+      <% else %>
+        <input class="form-control" name="expense_event[participant_names][]" placeholder="Participant name">
+      <% end %>
+    </div>
+
+    <%= button_tag "Add participant", type: 'button', id: 'add-participant', class: 'btn btn-link' %>
+  </div>
+  <%= form.submit "Create event", class: 'btn btn-primary mt-4 w-100' %>
+<% end %>
+
+<%= javascript_tag type: 'application/javascript' do %>
+  var addParticipantBtn = $('#add-participant')
+  var participantsList = $('#participants-list')
+
+  addParticipantBtn.click(function () {
+  const input = participantsList.find('input').first().clone(true)
+  input.val('')
+  participantsList.append(input)
+  })
+<% end %>

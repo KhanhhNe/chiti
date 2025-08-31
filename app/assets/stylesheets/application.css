@@ -8,3 +8,25 @@
  *
  * Consider organizing styles into separate files for maintainability.
  */
+
+.input-group-column {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  width: 100%;
+}
+
+.input-group-column:not(.has-validation) > .dropdown-toggle:nth-last-child(n+3), .input-group-column:not(.has-validation) > .form-floating:not(:last-child) > .form-control, .input-group-column:not(.has-validation) > .form-floating:not(:last-child) > .form-select, .input-group-column:not(.has-validation) > :not(:last-child):not(.dropdown-toggle):not(.dropdown-menu):not(.form-floating) {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.input-group-column>:not(:first-child):not(.dropdown-menu):not(.valid-tooltip):not(.valid-feedback):not(.invalid-tooltip):not(.invalid-feedback) {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+input:focus {
+  z-index: 999;
+}
