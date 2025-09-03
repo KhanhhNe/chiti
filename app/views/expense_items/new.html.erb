@@ -6,12 +6,12 @@
   <div class="d-flex flex-column gap-4">
     <div>
       <%= form.label :name, "Title", class: 'form-label ps-3 fs-6 fw-semibold' %>
-      <%= form.text_field :name, placeholder: 'E.g. Drinks', class: 'form-control' %>
+      <%= form.text_field :name, required: true, placeholder: 'E.g. Drinks', class: 'form-control' %>
     </div>
 
     <div>
       <%= form.label :amount, "Amount", class: 'form-label ps-3 fs-6 fw-semibold' %>
-      <%= form.text_field :amount, placeholder: '0', max_value_length: 9, class: 'monetary-input form-control' %>
+      <%= form.text_field :amount, required: true, placeholder: '0', max_value_length: 9, class: 'monetary-input form-control' %>
     </div>
 
     <div class="d-flex gap-2">
@@ -44,7 +44,7 @@
               <label for="participant-<%= participant[:id] %>-enabled" class="form-label mb-0 flex-grow-1"><%= participant[:name] %></label>
 
               <div class="participant-input participant-input-amount">
-                <input type="text" name="expense_item[participants][][amount]" value="0" readonly class="monetary-input form-control-plaintext form-control-sm text-end" style="width: 6rem"/>
+                <input type="text" name="expense_item[participants][][amount]" value="0" readonly class="monetary-input form-control form-control-plaintext form-control-sm text-end" style="width: 6rem"/>
                 <div>₫</div>
               </div>
             </div>
@@ -60,18 +60,39 @@
 <script type="text/javascript">
   $(function () {
     const amountInput = $('#expense_item_amount');
-    const amountDisplay = $('#amount-display');
+    const splitMethodSelect = $('#split-method');
     const participantEnableCheckboxes = $('.participants-list .participant-enabled');
 
-    $(function () {
-      amountInput.trigger('input')
-      recalculateParticipantAmounts()
-    })
+    const amountInputs = $('.participant-input-amount input')
+
+    amountInput.trigger('input')
+    recalculateParticipantAmounts()
 
     amountInput.on('input', function () {
       recalculateParticipantAmounts()
 
       $('input[type=submit]').prop('disabled', $(this).data('value') === 0)
+    })
+
+    splitMethodSelect.on('change', function () {
+      const mode = splitMethodSelect.val()
+
+      if (mode === 'equally') {
+        amountInputs
+          .prop('readonly', true)
+          .addClass('form-control-plaintext')
+
+        recalculateParticipantAmounts()
+      } else if (mode === 'by_amount') {
+        amountInputs
+          .filter(':not(:last)')
+          .prop('readonly', false)
+          .removeClass('form-control-plaintext')
+      }
+    })
+
+    amountInputs.on('input', function () {
+      recalculateParticipantAmounts()
     })
 
     participantEnableCheckboxes.on('change', function () {
@@ -82,7 +103,7 @@
     })
 
     function recalculateParticipantAmounts() {
-      const mode = $('#split-method').val()
+      const mode = splitMethodSelect.val()
       const enabledMap = {}
       const totalAmount = parseFloat(amountInput.data('value')) || 0
 
@@ -113,7 +134,34 @@
           } else {
             participant.amountInput.val('0')
           }
-          participant.amountInput.trigger('input')
+          updateMonetaryDisplay.bind(participant.amountInput.get(0))()
+        }
+      } else if (mode === 'by_amount') {
+        let amountLeft = totalAmount
+
+        for (const participant of Object.values(enabledMap)) {
+          if (participant.enabled) {
+            let value = parseFloat(participant.amountInput.data('value') || '0')
+            if (value > amountLeft) {
+              value = amountLeft
+            }
+            amountLeft -= value
+            participant.amountInput.val(value.toString())
+          } else {
+            participant.amountInput.val('0')
+          }
+          updateMonetaryDisplay.bind(participant.amountInput.get(0))()
+        }
+
+        // If there's any amount left, add it to the last enabled participant
+        if (amountLeft > 0) {
+          const lastEnabled = Object.values(enabledMap).filter(v => v.enabled).pop()
+          if (lastEnabled) {
+            let value = parseFloat(lastEnabled.amountInput.data('value')) || 0
+            value += amountLeft
+            lastEnabled.amountInput.val(value.toString())
+            updateMonetaryDisplay.bind(lastEnabled.amountInput.get(0))()
+          }
         }
       }
     }

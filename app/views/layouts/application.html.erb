@@ -65,7 +65,7 @@
     return result
   }
 
-  $('.monetary-input').on('input', function updateMonetaryDisplay() {
+  function updateMonetaryDisplay() {
     const input = $(this)
     const stringValue = input.val()
 
@@ -87,13 +87,9 @@
     input.data('value', value)
     input.val(formattedValue)
     this.setSelectionRange(cursorNewPosition, cursorNewPosition)
+  }
 
-    // Re-trigger other input events, except this handler
-    $(this)
-      .off('input', updateMonetaryDisplay)
-      .trigger('input')
-      .on('input', updateMonetaryDisplay)
-  })
+  $('.monetary-input').on('input', updateMonetaryDisplay)
 </script>
 </body>
 </html>
