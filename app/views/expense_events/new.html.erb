@@ -30,12 +30,14 @@
 <% end %>
 
 <script type="text/javascript">
-  let addParticipantBtn = $('#add-participant')
-  let participantsList = $('#participants-list')
+  $(function () {
+    const addParticipantBtn = $('#add-participant')
+    const participantsList = $('#participants-list')
 
-  addParticipantBtn.click(function () {
-    const input = participantsList.find('input').first().clone(true)
-    input.val('')
-    participantsList.append(input)
+    addParticipantBtn.click(function () {
+      const input = participantsList.find('input').first().clone(true)
+      input.val('')
+      participantsList.append(input)
+    })
   })
 </script>

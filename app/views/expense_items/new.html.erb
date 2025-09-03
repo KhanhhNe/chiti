@@ -58,64 +58,66 @@
 <% end %>
 
 <script type="text/javascript">
-  var amountInput = $('#expense_item_amount')
-  var amountDisplay = $('#amount-display')
-  var participantEnableCheckboxes = $('.participants-list .participant-enabled')
-
   $(function () {
-    amountInput.trigger('input')
-    recalculateParticipantAmounts()
-  })
+    const amountInput = $('#expense_item_amount');
+    const amountDisplay = $('#amount-display');
+    const participantEnableCheckboxes = $('.participants-list .participant-enabled');
 
-  amountInput.on('input', function () {
-    recalculateParticipantAmounts()
+    $(function () {
+      amountInput.trigger('input')
+      recalculateParticipantAmounts()
+    })
 
-    $('input[type=submit]').prop('disabled', $(this).data('value') === 0)
-  })
+    amountInput.on('input', function () {
+      recalculateParticipantAmounts()
 
-  participantEnableCheckboxes.on('change', function () {
-    const isEnabled = $(this).prop('checked')
+      $('input[type=submit]').prop('disabled', $(this).data('value') === 0)
+    })
 
-    $(this).siblings('.participant-input-amount').css('opacity', isEnabled ? '1' : '0.25')
-    recalculateParticipantAmounts()
-  })
+    participantEnableCheckboxes.on('change', function () {
+      const isEnabled = $(this).prop('checked')
 
-  function recalculateParticipantAmounts() {
-    const mode = $('#split-method').val()
-    const enabledMap = {}
-    const totalAmount = parseFloat(amountInput.data('value')) || 0
+      $(this).siblings('.participant-input-amount').css('opacity', isEnabled ? '1' : '0.25')
+      recalculateParticipantAmounts()
+    })
 
-    for (let checkbox of participantEnableCheckboxes) {
-      checkbox = $(checkbox)
-      enabledMap[checkbox.data('id')] = {
-        id: checkbox.data('id'),
-        enabled: checkbox.prop('checked'),
-        amountInput: checkbox.siblings('.participant-input-amount').find('input')
-      }
-    }
+    function recalculateParticipantAmounts() {
+      const mode = $('#split-method').val()
+      const enabledMap = {}
+      const totalAmount = parseFloat(amountInput.data('value')) || 0
 
-    if (mode === 'equally') {
-      const amounts = []
-      let amountLeft = totalAmount
-      let enabledCount = Object.values(enabledMap).filter(v => v.enabled).length
-
-      while (enabledCount > 0) {
-        const amount = Math.floor(amountLeft / enabledCount)
-        amountLeft -= amount
-        enabledCount -= 1
-        amounts.push(amount)
-      }
-
-      for (const participant of Object.values(enabledMap)) {
-        if (participant.enabled) {
-          participant.amountInput.val(amounts.shift().toString())
-        } else {
-          participant.amountInput.val('0')
+      for (let checkbox of participantEnableCheckboxes) {
+        checkbox = $(checkbox)
+        enabledMap[checkbox.data('id')] = {
+          id: checkbox.data('id'),
+          enabled: checkbox.prop('checked'),
+          amountInput: checkbox.siblings('.participant-input-amount').find('input')
         }
-        participant.amountInput.trigger('input')
+      }
+
+      if (mode === 'equally') {
+        const amounts = []
+        let amountLeft = totalAmount
+        let enabledCount = Object.values(enabledMap).filter(v => v.enabled).length
+
+        while (enabledCount > 0) {
+          const amount = Math.floor(amountLeft / enabledCount)
+          amountLeft -= amount
+          enabledCount -= 1
+          amounts.push(amount)
+        }
+
+        for (const participant of Object.values(enabledMap)) {
+          if (participant.enabled) {
+            participant.amountInput.val(amounts.shift().toString())
+          } else {
+            participant.amountInput.val('0')
+          }
+          participant.amountInput.trigger('input')
+        }
       }
     }
-  }
+  })
 </script>
 
 <style>
