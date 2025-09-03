@@ -3,6 +3,6 @@ class EventParticipant < ApplicationRecord
   belongs_to :expense_event
 
   def participant_name
-    name || user.name
+    name.presence || user&.name
   end
 end

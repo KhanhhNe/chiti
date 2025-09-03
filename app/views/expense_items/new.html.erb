@@ -1,0 +1,162 @@
+<% content_for :title do %>
+  Add expense
+<% end %>
+
+<%= form_with model: @expense_item, url: expense_event_expense_items_url(params[:expense_event_id]) do |form| %>
+  <div class="d-flex flex-column gap-4">
+    <div>
+      <%= form.label :name, "Title", class: 'form-label ps-3 fs-6 fw-semibold' %>
+      <%= form.text_field :name, placeholder: 'E.g. Drinks', class: 'form-control' %>
+    </div>
+
+    <div>
+      <%= form.label :amount, "Amount", class: 'form-label ps-3 fs-6 fw-semibold' %>
+      <%= form.text_field :amount, placeholder: '0', max_value_length: 9, class: 'monetary-input form-control' %>
+    </div>
+
+    <div class="d-flex gap-2">
+      <div class="w-50">
+        <%= form.label :paid_by_id, "Paid by", class: 'form-label ps-3 fs-6 fw-semibold' %>
+        <%= form.select :paid_by_id, participants.map { |p| [p[:name], p[:id]] }, {}, { class: 'form-select' } %>
+      </div>
+      <div class="w-50">
+        <%= form.label :paid_on, "When", class: 'form-label ps-3 fs-6 fw-semibold' %>
+        <%= form.date_field :paid_on, class: 'form-control' %>
+      </div>
+    </div>
+
+    <div>
+      <div class="pb-2 d-flex justify-content-between align-items-center">
+        <label class="form-label ps-3 mb-0 fs-6 fw-semibold">Split</label>
+        <select id="split-method" class="form-select form-select-sm w-auto">
+          <option value="equally" selected>Equally</option>
+          <option value="by_amount">By amount</option>
+          <option value="by_parts">By parts</option>
+        </select>
+      </div>
+
+      <div class="participants-list">
+        <% participants.each do |participant| %>
+          <div>
+            <div class="d-flex gap-2 align-items-center">
+              <input type="hidden" name="expense_item[participants][][id]" value="<%= participant[:id] %>"/>
+              <input id="participant-<%= participant[:id] %>-enabled" data-id="<%= participant[:id] %>" type="checkbox" name="expense_item[participants][][enabled]" class="participant-enabled form-check mb-0" checked/>
+              <label for="participant-<%= participant[:id] %>-enabled" class="form-label mb-0 flex-grow-1"><%= participant[:name] %></label>
+
+              <div class="participant-input participant-input-amount">
+                <input type="text" name="expense_item[participants][][amount]" value="0" readonly class="monetary-input form-control-plaintext form-control-sm text-end" style="width: 6rem"/>
+                <div>₫</div>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <%= form.submit "Add expense", disabled: (@expense_item.amount || 0) <= 0, class: 'btn btn-primary w-100 mt-4' %>
+<% end %>
+
+<script type="text/javascript">
+  var amountInput = $('#expense_item_amount')
+  var amountDisplay = $('#amount-display')
+  var participantEnableCheckboxes = $('.participants-list .participant-enabled')
+
+  $(function () {
+    amountInput.trigger('input')
+    recalculateParticipantAmounts()
+  })
+
+  amountInput.on('input', function () {
+    recalculateParticipantAmounts()
+
+    $('input[type=submit]').prop('disabled', $(this).data('value') === 0)
+  })
+
+  participantEnableCheckboxes.on('change', function () {
+    const isEnabled = $(this).prop('checked')
+
+    $(this).siblings('.participant-input-amount').css('opacity', isEnabled ? '1' : '0.25')
+    recalculateParticipantAmounts()
+  })
+
+  function recalculateParticipantAmounts() {
+    const mode = $('#split-method').val()
+    const enabledMap = {}
+    const totalAmount = parseFloat(amountInput.data('value')) || 0
+
+    for (let checkbox of participantEnableCheckboxes) {
+      checkbox = $(checkbox)
+      enabledMap[checkbox.data('id')] = {
+        id: checkbox.data('id'),
+        enabled: checkbox.prop('checked'),
+        amountInput: checkbox.siblings('.participant-input-amount').find('input')
+      }
+    }
+
+    if (mode === 'equally') {
+      const amounts = []
+      let amountLeft = totalAmount
+      let enabledCount = Object.values(enabledMap).filter(v => v.enabled).length
+
+      while (enabledCount > 0) {
+        const amount = Math.floor(amountLeft / enabledCount)
+        amountLeft -= amount
+        enabledCount -= 1
+        amounts.push(amount)
+      }
+
+      for (const participant of Object.values(enabledMap)) {
+        if (participant.enabled) {
+          participant.amountInput.val(amounts.shift().toString())
+        } else {
+          participant.amountInput.val('0')
+        }
+        participant.amountInput.trigger('input')
+      }
+    }
+  }
+</script>
+
+<style>
+  .participants-list {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .participants-list > div {
+    background-color: var(--bs-light);
+  }
+
+  .participants-list > div:first-child {
+    border-top-left-radius: 0.5rem;
+    border-top-right-radius: 0.5rem;
+  }
+
+  .participants-list > div:last-child {
+    border-bottom-left-radius: 0.5rem;
+    border-bottom-right-radius: 0.5rem;
+  }
+
+  .participants-list > div > div {
+    margin-left: 1rem;
+    margin-right: 1rem;
+    padding-top: 0.35rem;
+    padding-bottom: 0.35rem;
+  }
+
+  .participants-list > div:not(:last-child) > div {
+    border-bottom: 1px solid var(--bs-dark-bg-subtle);
+  }
+
+  .participant-input {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .participant-enabled {
+    width: 1rem;
+    height: 1rem;
+  }
+</style>

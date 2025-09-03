@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_08_30_110128) do
+ActiveRecord::Schema[8.0].define(version: 2025_08_31_134426) do
   create_table "event_participants", force: :cascade do |t|
     t.integer "user_id"
     t.integer "expense_event_id", null: false
@@ -25,6 +25,30 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_30_110128) do
     t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "expense_items", force: :cascade do |t|
+    t.string "name"
+    t.integer "paid_by_id", null: false
+    t.integer "expense_event_id", null: false
+    t.float "amount"
+    t.date "paid_on"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["expense_event_id"], name: "index_expense_items_on_expense_event_id"
+    t.index ["paid_by_id"], name: "index_expense_items_on_paid_by_id"
+  end
+
+  create_table "item_participants", force: :cascade do |t|
+    t.integer "expense_event_id", null: false
+    t.integer "expense_item_id", null: false
+    t.integer "event_participant_id", null: false
+    t.float "amount", default: 0.0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["event_participant_id"], name: "index_item_participants_on_event_participant_id"
+    t.index ["expense_event_id"], name: "index_item_participants_on_expense_event_id"
+    t.index ["expense_item_id"], name: "index_item_participants_on_expense_item_id"
   end
 
   create_table "sessions", force: :cascade do |t|
@@ -47,5 +71,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_30_110128) do
 
   add_foreign_key "event_participants", "expense_events"
   add_foreign_key "event_participants", "users"
+  add_foreign_key "expense_items", "event_participants", column: "paid_by_id"
+  add_foreign_key "expense_items", "expense_events"
+  add_foreign_key "item_participants", "event_participants"
+  add_foreign_key "item_participants", "expense_events"
+  add_foreign_key "item_participants", "expense_items"
   add_foreign_key "sessions", "users"
 end

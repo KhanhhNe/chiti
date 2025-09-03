@@ -14,5 +14,7 @@ Rails.application.routes.draw do
   # Defines the root path route ("/")
   root "expense_event#new"
 
-  resources :expense_events
+  resources :expense_events do
+    resources :expense_items
+  end
 end

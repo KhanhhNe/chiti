@@ -1,3 +1,43 @@
-<%= debug @event %>
+<div id="add-expense-btn">
+  <%= debug(@event.expense_items) %>
+  <a href="<%= new_expense_event_expense_item_url(@event) %>" class="add-expense-btn-icon link-underline link-underline-opacity-0">
+    <i class="bi bi-plus"></i>
+  </a>
+  <div class="px-1 fw-bolder text-primary bg-primary-subtle rounded small">
+    Add expense
+  </div>
+</div>
 
-<%= debug @event.event_participants %>
+<style>
+  #add-expense-btn {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 50%;
+    cursor: pointer;
+    transform: translateX(-50%);
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  #add-expense-btn .add-expense-btn-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 3rem;
+    height: 3rem;
+
+    border-radius: 50%;
+    border: 1px solid var(--bs-primary);
+    background-color: var(--bs-primary-bg-subtle);
+  }
+
+  #add-expense-btn i {
+    color: var(--bs-primary);
+    font-size: 2rem;
+  }
+</style>
+

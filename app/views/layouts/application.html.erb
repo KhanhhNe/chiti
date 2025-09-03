@@ -1,47 +1,100 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title><%= content_for(:title) || "Chiti" %></title>
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
-    <%= csrf_meta_tags %>
-    <%= csp_meta_tag %>
+<head>
+  <title><%= content_for(:title) || "Chiti" %></title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
 
-    <%= yield :head %>
+  <%= yield :head %>
 
-    <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
-    <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
+  <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
+  <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
 
-    <link rel="icon" href="/icon.png" type="image/png">
-    <link rel="icon" href="/icon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="/icon.png">
+  <link rel="icon" href="/icon.png" type="image/png">
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icon.png">
 
-    <%# Includes all stylesheet files in app/assets/stylesheets %>
-    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
-    <%= javascript_importmap_tags %>
+  <%# Includes all stylesheet files in app/assets/stylesheets %>
+  <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+  <%= javascript_importmap_tags %>
 
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" rel="stylesheet">
-  </head>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" rel="stylesheet">
+</head>
 
-  <body class="p-4" style="max-width: 430px; margin: auto;">
-  <div class="fw-semibold mb-4 text-center">
-    <%= yield :title %>
-  </div>
+<body class="p-4" style="max-width: 430px; margin: auto;">
+<div class="fw-semibold mb-4 text-center">
+  <%= yield :title %>
+</div>
 
-  <% if flash[:errors].present? %>
-    <% flash[:errors].each do |error| %>
-      <div style="background-color: red; color: white; padding: 10px; margin: 10px 0;">
-        <%= error %>
-      </div>
-    <% end %>
+<% if flash[:errors].present? %>
+  <% flash[:errors].each do |error| %>
+    <div style="background-color: red; color: white; padding: 10px; margin: 10px 0;">
+      <%= error %>
+    </div>
   <% end %>
+<% end %>
 
-  <%= yield %>
+<%= yield %>
 
-  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
-  </body>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+
+<script>
+  function formatMoney(value) {
+    if (isNaN(value) || value <= 0) {
+      return '0'
+    }
+
+    let result = ''
+    const decimal = value % 1
+    value = Math.floor(value)
+
+    while (value > 0) {
+      result = ',' + (value % 1000).toString().padStart(3, '0') + result
+      value = Math.floor(value / 1000)
+    }
+
+    result = result.replace(/^[,0]+/, '')
+    if (decimal > 0) {
+      result += decimal.toString().slice(1)
+    }
+    return result
+  }
+
+  $('.monetary-input').on('input', function updateMonetaryDisplay() {
+    const input = $(this)
+    const stringValue = input.val()
+
+    // Cap the string by length, keeping the left hand side (0 means uncapped)
+    const maxValueLength = parseInt(input.attr('max_value_length') || '0')
+    const cappedStringValue = stringValue.replace(/[^0-9.]/g, '').slice(0, maxValueLength || undefined)
+
+    let value = parseFloat(cappedStringValue)
+    if (isNaN(value)) {
+      value = 0
+    }
+
+    const formattedValue = formatMoney(value)
+
+    // Keep the cursor position the same (counted from end of string)
+    const cursorOriginalOffset = stringValue.length - this.selectionStart
+    const cursorNewPosition = Math.max(formattedValue.length - cursorOriginalOffset, 0)
+
+    input.data('value', value)
+    input.val(formattedValue)
+    this.setSelectionRange(cursorNewPosition, cursorNewPosition)
+
+    // Re-trigger other input events, except this handler
+    $(this)
+      .off('input', updateMonetaryDisplay)
+      .trigger('input')
+      .on('input', updateMonetaryDisplay)
+  })
+</script>
+</body>
 </html>
