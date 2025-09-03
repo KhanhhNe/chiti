@@ -46,9 +46,8 @@
 
 <script>
   function formatMoney(value) {
-    if (isNaN(value) || value <= 0) {
-      return '0'
-    }
+    if (isNaN(value) || value == null) return '';
+    if (value <= 0) return '0'
 
     let result = ''
     const decimal = value % 1
@@ -74,8 +73,8 @@
     const maxValueLength = parseInt(input.attr('max_value_length') || '0')
     const cappedStringValue = stringValue.replace(/[^0-9.]/g, '').slice(0, maxValueLength || undefined)
 
-    let value = parseFloat(cappedStringValue)
-    if (isNaN(value)) {
+    let value = cappedStringValue ? parseFloat(cappedStringValue) : null
+    if (value != null && isNaN(value)) {
       value = 0
     }
 
