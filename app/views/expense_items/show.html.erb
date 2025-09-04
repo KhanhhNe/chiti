@@ -1,0 +1,35 @@
+<% content_for :title, @expense_item.name %>
+<% content_for :back_url, expense_event_url(@expense_item.expense_event_id) %>
+
+<div class="mb-4 fs-7 text-secondary text-center"><%= @expense_item.paid_on.strftime('%A, %e %B %Y') %></div>
+
+<div class="mb-4">
+  <div class="fw-semibold mb-2">Paid By</div>
+  <div class="px-3 py-2 d-flex justify-content-between align-items-center rounded rounded-2 bg-light">
+    <div>
+      <div><%= @expense_item.paid_by.participant_name %></div>
+      <% if @expense_item.paid_by.user == @current_user %>
+        <div class="fs-7 text-secondary">Me</div>
+      <% end %>
+    </div>
+    <div class="fw-semibold"><%= format_monetary(@expense_item.amount) %></div>
+  </div>
+</div>
+
+<div>
+  <div class="fw-semibold mb-2">For <%= @expense_item.item_participants.count %> participants</div>
+  <div class="d-flex flex-column gap-2">
+    <% @expense_item.item_participants.each do |participant| %>
+      <% next if participant.amount == 0 %>
+      <div class="px-3 py-2 d-flex justify-content-between align-items-center rounded rounded-2 bg-light">
+        <div class="d-flex flex-column justify-content-center" style="height: 2.75rem">
+          <div><%= participant.event_participant.participant_name %></div>
+          <% if participant.event_participant.user == @current_user %>
+            <div class="fs-7 text-secondary">Me</div>
+          <% end %>
+        </div>
+        <div class="fw-semibold"><%= format_monetary(participant.amount) %></div>
+      </div>
+    <% end %>
+  </div>
+</div>
