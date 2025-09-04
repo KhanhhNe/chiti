@@ -12,7 +12,7 @@ Rails.application.routes.draw do
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
   # Defines the root path route ("/")
-  root "expense_event#new"
+  root "expense_events#index"
 
   resources :expense_events do
     resources :expense_items

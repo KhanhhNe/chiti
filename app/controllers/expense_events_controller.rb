@@ -4,10 +4,8 @@ class ExpenseEventsController < ApplicationController
   end
 
   def show
-    @event = ExpenseEvent.find(params[:id])
-    unless @event.users.include?(@current_user)
-      redirect_to expense_events_path, alert: "You do not have access to this event."
-    end
+    @event = @current_user.expense_events.find(params[:id])
+    @items = @event.expense_items.includes(:paid_by => :user).order(:paid_on => :desc).group_by(&:paid_on)
   end
 
   def new

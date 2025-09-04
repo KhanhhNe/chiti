@@ -1,6 +1,5 @@
-<% content_for :title do %>
-  Add event
-<% end %>
+<% content_for :title, 'Add event' %>
+<% content_for :back_url, expense_events_url %>
 
 <%= form_with model: @event do |form| %>
   <div class="d-flex flex-column gap-4">

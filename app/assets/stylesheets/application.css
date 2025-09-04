@@ -30,3 +30,7 @@
 input:focus {
   z-index: 999;
 }
+
+.fs-7 {
+  font-size: 0.875rem;
+}
