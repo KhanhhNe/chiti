@@ -35,8 +35,25 @@ class ExpenseEventsController < ApplicationController
     params.expect(expense_event: [:name, participant_names: []])
   end
 
-  helper_method :unsafe_participant_names
+  helper_method :unsafe_participant_names, :total_my_expenses, :total_expenses
+
   def unsafe_participant_names
     params.dig(:expense_event, :participant_names).presence || []
+  end
+
+  def total_my_expenses
+    @event
+      .item_participants
+      .joins(:event_participant)
+      .where(event_participants: { user: @current_user })
+      .select('SUM(item_participants.amount) as total_expense_amount')
+      .as_json.first['total_expense_amount'] || 0
+  end
+
+  def total_expenses
+    @event
+      .item_participants
+      .select('SUM(item_participants.amount) as total_expense_amount')
+      .as_json.first['total_expense_amount'] || 0
   end
 end

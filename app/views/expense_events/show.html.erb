@@ -1,6 +1,17 @@
 <% content_for :title, @event.name %>
 <% content_for :back_url, expense_events_url %>
 
+<div class="d-flex justify-content-around mb-4 text-center">
+  <div>
+    <div class="fs-7 fw-light text-secondary">My Expenses</div>
+    <div class="fw-semibold"><%= format_monetary(total_my_expenses) %></div>
+  </div>
+  <div>
+    <div class="fs-7 fw-light text-secondary">Total Expenses</div>
+    <div class="fw-semibold"><%= format_monetary(total_expenses) %></div>
+  </div>
+</div>
+
 <div class="d-flex flex-column gap-4">
   <% @items.each_pair do |paid_on, items| %>
     <div>
