@@ -1,6 +1,12 @@
 <% content_for :title, @expense_item.name %>
 <% content_for :back_url, expense_event_url(@expense_item.expense_event_id) %>
 
+<% content_for :actions do %>
+  <li>
+    <a class="dropdown-item" href="<%= edit_expense_event_expense_item_path(@expense_item.expense_event_id, @expense_item) %>">Edit</a>
+  </li>
+<% end %>
+
 <div class="mb-4 fs-7 text-secondary text-center"><%= @expense_item.paid_on.strftime('%A, %e %B %Y') %></div>
 
 <div class="mb-4">

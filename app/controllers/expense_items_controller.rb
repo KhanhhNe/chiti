@@ -34,10 +34,11 @@ class ExpenseItemsController < ApplicationController
     update_participants(@expense_item, participants_params)
 
     if @expense_item.save
-      redirect_to @expense_item, notice: "Expense item was successfully added."
+      flash.now[:notice] = "Expense item was successfully updated."
+      redirect_to @expense_item
     else
       flash.now[:errors] = @expense_item.errors.full_messages
-      render :new, status: :unprocessable_entity
+      render :edit, status: :unprocessable_entity
     end
   end
 
@@ -45,10 +46,14 @@ class ExpenseItemsController < ApplicationController
     @expense_item = @expense_event.expense_items.includes(:item_participants => :event_participant).find(params[:id])
   end
 
+  def expense_item_url(item)
+    expense_event_expense_item_url(item.expense_event_id, item)
+  end
+
   private
 
   def update_participants(expense_item, new_participants)
-    current_participants = expense_item.item_participants
+    current_participants = expense_item.item_participants.to_a
 
     new_participants.each do |participant|
       event_participant_id = participant[:id]
@@ -127,12 +132,17 @@ class ExpenseItemsController < ApplicationController
   helper_method :participants
 
   def participants
+    return @_participants if defined?(@_participants)
+
+    item_participants = @expense_item&.item_participants || []
+
     @_participants ||= @expense_event.event_participants.includes(:user).map do |participant|
       name = participant.participant_name || "Unknown"
       name = "#{name} (Me)" if participant.user_id == @current_user.id
       {
         id: participant.id,
-        name: name
+        name: name,
+        amount: item_participants.find { |ip| ip.event_participant_id == participant.id }&.amount || 0.0
       }
     end
   end
