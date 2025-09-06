@@ -38,7 +38,7 @@
             <label for="participant-<%= participant[:id] %>-enabled" class="form-label mb-0 flex-grow-1"><%= participant[:name] %></label>
 
             <div class="participant-input participant-input-amount">
-              <input type="text" name="expense_item[participants][][amount]" value="<%= participant[:amount] %>" readonly class="monetary-input form-control form-control-plaintext form-control-sm text-end" style="width: 6rem"/>
+              <input type="text" name="expense_item[participants][][amount]" value="<%= participant[:amount] %>" readonly class="monetary-input enabled form-control form-control-plaintext form-control-sm text-end" style="width: 6rem"/>
               <div>₫</div>
             </div>
           </div>
@@ -54,49 +54,60 @@
     const splitMethodSelect = $('#split-method');
     const participantEnableCheckboxes = $('.participants-list .participant-enabled');
 
-    const amountInputs = $('.participant-input-amount input')
+    const participantAmountInputs = $('.participant-input-amount input')
 
-    amountInput.trigger('input')
+    updateAmountInputsAppearance()
     recalculateParticipantAmounts()
 
+    // Update amounts inputs when total amount changes
     amountInput.on('input', function () {
       recalculateParticipantAmounts()
 
+      // Disable submit button if amount is zero
       $('input[type=submit]').prop('disabled', $(this).data('value') === 0)
     })
 
+    // Recalculate amounts when split method changes
     splitMethodSelect.on('change', function () {
+      updateAmountInputsAppearance()
+      recalculateParticipantAmounts()
+    })
+
+    // Recalculate amounts when participant enabled/disabled
+    participantEnableCheckboxes.on('change', function () {
+      $(this).siblings('.participant-input-amount')
+        .find('input')
+        .toggleClass('enabled', $(this).prop('checked'))
+
+      updateAmountInputsAppearance()
+      recalculateParticipantAmounts()
+    })
+
+    // Recalculate amounts when participant amount changes
+    participantAmountInputs.on('input', recalculateParticipantAmounts)
+
+    function updateAmountInputsAppearance() {
       const mode = splitMethodSelect.val()
 
       if (mode === 'equally') {
-        amountInputs
-          .prop('readonly', true)
-          .addClass('form-control-plaintext')
+        toggleInput(participantAmountInputs, false)
 
-        recalculateParticipantAmounts()
       } else if (mode === 'by_amount') {
-        amountInputs
-          .filter(':not(:last)')
-          .prop('readonly', false)
-          .removeClass('form-control-plaintext')
+        toggleInput(participantAmountInputs.filter(':not(.enabled)'), false)
+
+        const enabledInputs = participantAmountInputs.filter('.enabled')
+        toggleInput(enabledInputs, true)
+
+        if (enabledInputs.length > 1) {
+          toggleInput(enabledInputs.last(), false)
+        }
       }
-    })
-
-    amountInputs.on('input', function () {
-      recalculateParticipantAmounts()
-    })
-
-    participantEnableCheckboxes.on('change', function () {
-      const isEnabled = $(this).prop('checked')
-
-      $(this).siblings('.participant-input-amount').css('opacity', isEnabled ? '1' : '0.25')
-      recalculateParticipantAmounts()
-    })
+    }
 
     function recalculateParticipantAmounts() {
       const mode = splitMethodSelect.val()
       const enabledMap = {}
-      const totalAmount = parseFloat(amountInput.data('value')) || 0
+      const totalAmount = getMonetaryValue(amountInput)
 
       for (let checkbox of participantEnableCheckboxes) {
         checkbox = $(checkbox)
@@ -110,55 +121,46 @@
       if (mode === 'equally') {
         const amounts = []
         let amountLeft = totalAmount
-        let enabledCount = Object.values(enabledMap).filter(v => v.enabled).length
+        let enabledCount = participantAmountInputs.filter('.enabled').length
 
-        while (enabledCount > 0) {
-          const amount = Math.floor(amountLeft / enabledCount)
-          amountLeft -= amount
-          enabledCount -= 1
-          amounts.push(amount)
-        }
+        for (const input of participantAmountInputs) {
+          if ($(input).hasClass('enabled')) {
+            // Make sure integer division is handled correctly
+            // and remainder are spread out (not accumulated to the last participant)
+            const amount = Math.floor(amountLeft / enabledCount)
+            amountLeft -= amount
+            enabledCount -= 1
 
-        for (const participant of Object.values(enabledMap)) {
-          if (participant.enabled) {
-            participant.amountInput.val(amounts.shift().toString())
+            updateMonetaryValue(input, amount)
           } else {
-            participant.amountInput.val('0')
+            updateMonetaryValue(input, 0)
           }
-          updateMonetaryDisplay.bind(participant.amountInput.get(0))()
         }
       } else if (mode === 'by_amount') {
         let amountLeft = totalAmount
 
-        for (const participant of Object.values(enabledMap)) {
-          if (participant.enabled) {
-            let value = parseFloat(
-              participant.amountInput.data('value') ||
-              participant.amountInput.val().replaceAll(/,/g, '') ||
-              '0'
-            )
-            if (value > amountLeft) {
-              value = amountLeft
-            }
-            amountLeft -= value
-            participant.amountInput.val(value.toString())
-          } else {
-            participant.amountInput.val('0')
-          }
-          updateMonetaryDisplay.bind(participant.amountInput.get(0))()
-        }
+        for (const input of participantAmountInputs) {
+          if ($(input).hasClass('enabled')) {
+            const isCalculated = $(input).prop('readonly')
 
-        // If there's any amount left, add it to the last enabled participant
-        if (amountLeft > 0) {
-          const lastEnabled = Object.values(enabledMap).filter(v => v.enabled).pop()
-          if (lastEnabled) {
-            let value = parseFloat(lastEnabled.amountInput.data('value')) || 0
-            value += amountLeft
-            lastEnabled.amountInput.val(value.toString())
-            updateMonetaryDisplay.bind(lastEnabled.amountInput.get(0))()
+            if (!isCalculated) {
+              let value = Math.min(getMonetaryValue(input), amountLeft)
+              amountLeft -= value
+
+              updateMonetaryValue(input, value)
+            } else {
+              updateMonetaryValue(input, amountLeft)
+            }
+          } else {
+            updateMonetaryValue(input, 0)
           }
         }
       }
+    }
+
+    function toggleInput(input, enabled) {
+      ensureJquery(input)?.prop('readonly', !enabled)
+        .toggleClass('form-control-plaintext', !enabled)
     }
   })
 </script>
@@ -203,5 +205,9 @@
   .participant-enabled {
     width: 1rem;
     height: 1rem;
+  }
+
+  .participant-input-amount input:not(.enabled) {
+    opacity: 0.25;
   }
 </style>
