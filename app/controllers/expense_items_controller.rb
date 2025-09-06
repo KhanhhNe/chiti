@@ -1,45 +1,46 @@
 class ExpenseItemsController < ApplicationController
-  before_action :set_expense_event
+  before_action -> { @expense_event = @current_user.expense_events.find(params[:expense_event_id]) }
 
   def new
     @expense_item = @expense_event.expense_items.new(paid_on: Date.today)
   end
 
+  rescue_render :create do
+    @expense_item = @expense_event.expense_items.new(params[:expense_item].to_unsafe_h)
+    render :new, status: :unprocessable_entity
+  end
   def create
-    @expense_item = @expense_event.expense_items.new(expense_item_model_params)
+    @expense_item = @expense_event.expense_items.new(expense_item_params[:expense_item])
 
-    return unless validate_participants
-    return unless validate_total_amount
+    validate_participants
+    validate_total_amount
 
     update_participants(@expense_item, participants_params)
 
-    if @expense_item.save
-      redirect_to @expense_event, notice: "Expense item was successfully added."
-    else
-      flash.now[:errors] = @expense_item.errors.full_messages
-      render :new, status: :unprocessable_entity
-    end
+    @expense_item.save!
+    flash.now[:notice] = "Expense item was successfully created."
+    redirect_to @expense_event
   end
 
   def edit
     @expense_item = @expense_event.expense_items.find(params[:id])
   end
 
+  rescue_render :update do
+    render :edit, status: :unprocessable_entity
+  end
   def update
     @expense_item = @expense_event.expense_items.find(params[:id])
+    @expense_item.update(expense_item_params[:expense_item])
 
-    return unless validate_participants
-    return unless validate_total_amount
+    validate_participants
+    validate_total_amount
 
     update_participants(@expense_item, participants_params)
 
-    if @expense_item.save
-      flash.now[:notice] = "Expense item was successfully updated."
-      redirect_to @expense_item
-    else
-      flash.now[:errors] = @expense_item.errors.full_messages
-      render :edit, status: :unprocessable_entity
-    end
+    @expense_item.save!
+    flash.now[:notice] = "Expense item was successfully updated."
+    redirect_to @expense_item
   end
 
   def show
@@ -78,55 +79,38 @@ class ExpenseItemsController < ApplicationController
     params_participant_ids = participants_params.map { |p| p[:id].to_i }
 
     if params_participant_ids - participant_ids != []
-      flash.now[:errors] = ["One or more participants are invalid."]
-      render :new, status: :unprocessable_entity
-      return false
+      raise ParamsValidationError.new("One or more participants are invalid.")
     end
-
-    true
   end
 
   def validate_total_amount
     total_amount = participants_params.sum { |p| p[:amount] }
-    if total_amount != expense_item_params[:amount]
-      flash.now[:errors] = ["Total amount (#{total_amount}) does not equal to expense item amount (#{expense_item_params[:amount]})."]
-      render :new, status: :unprocessable_entity
-      return false
+
+    if total_amount != expense_item_params[:expense_item][:amount]
+      raise ParamsValidationError.new("Total amount (#{total_amount}) does not equal to expense item amount (#{expense_item_params[:expense_item][:amount]}).")
     end
-
-    true
   end
 
-  def set_expense_event
-    @expense_event = @current_user.expense_events.find(params[:expense_event_id])
-  end
+  def expense_item_params; end
 
-  def expense_item_params
-    parsed = params.require(:expense_item).permit(
-      :name, :amount, :paid_by_id, :expense_event_id, :paid_on,
-      participants: [[:id, :enabled, :amount]]
-    )
-
-    update_hash_path!(parsed, [:amount], method(:parse_monetary_number))
-    update_hash_path!(parsed, [:paid_by_id], ->(v) { v&.to_i })
-    parsed[:participants] = (parsed[:participants] || []).map do |p|
-      p.merge(
-        {
-          id: p[:id].to_i,
-          amount: parse_monetary_number(p[:amount])
-        }
-      )
+  dry_params :expense_item_params do
+    params do
+      required(:expense_item).hash do
+        required(:name).filled(:string)
+        required(:amount).filled(:monetary)
+        required(:paid_by_id).filled(:integer)
+        required(:paid_on).filled(:date)
+        required(:participants).array(:hash) do
+          required(:id).filled(:integer)
+          optional(:enabled).filled(:checkbox)
+          required(:amount).filled(:monetary)
+        end
+      end
     end
-
-    parsed
-  end
-
-  def expense_item_model_params
-    expense_item_params.slice(:name, :amount, :paid_by_id, :expense_event_id, :paid_on)
   end
 
   def participants_params
-    expense_item_params[:participants] || []
+    expense_item_params[:expense_item][:participants] || []
   end
 
   helper_method :participants
@@ -134,15 +118,20 @@ class ExpenseItemsController < ApplicationController
   def participants
     return @_participants if defined?(@_participants)
 
-    item_participants = @expense_item&.item_participants || []
+    item_participants = @expense_item&.item_participants&.to_a || []
+    participant_params = params.dig(:expense_item, :participants) || []
 
     @_participants ||= @expense_event.event_participants.includes(:user).map do |participant|
+      item_participant = item_participants.find { |ip| ip.event_participant_id == participant.id }
+      participant_param = participant_params.find { |pp| pp[:id].to_i == participant.id }
+
       name = participant.participant_name || "Unknown"
       name = "#{name} (Me)" if participant.user_id == @current_user.id
       {
         id: participant.id,
         name: name,
-        amount: item_participants.find { |ip| ip.event_participant_id == participant.id }&.amount || 0.0
+        enabled: participant_param.present? ? participant_param[:enabled] == "on" : true,
+        amount: item_participant&.amount || 0.0
       }
     end
   end

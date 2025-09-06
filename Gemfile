@@ -61,3 +61,6 @@ group :test do
   gem "capybara"
   gem "selenium-webdriver"
 end
+
+gem "dry-validation", "~> 1.11"
+gem "dry-types"

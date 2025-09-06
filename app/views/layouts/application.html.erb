@@ -58,7 +58,13 @@
 <%= yield %>
 
 <script>
-  $('.monetary-input').on('input', _updateMonetaryDisplay)
+  $(function () {
+    $('.monetary-input')
+      .each(function () {
+        _updateMonetaryDisplay.bind(this)()
+      })
+      .on('input', _updateMonetaryDisplay)
+  })
 
   function ensureJquery(elem) {
     if (!elem) return elem
@@ -87,7 +93,7 @@
 
   function getMonetaryValue(input) {
     input = ensureJquery(input)
-    return parseFloat(input.data('value') || input.val().replaceAll(/,/g, '') || '0')
+    return parseFloat(input.val().replaceAll(/,/g, '') || '0')
   }
 
   function toJqueryArray(input) {

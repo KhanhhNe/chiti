@@ -22,7 +22,7 @@
 
   <div>
     <div class="pb-2 d-flex justify-content-between align-items-center">
-      <label class="form-label ps-3 mb-0 fs-6 fw-semibold">Split</label>
+      <label for=split-method class="form-label ps-3 mb-0 fs-6 fw-semibold">Split</label>
       <select id="split-method" class="form-select form-select-sm w-auto">
         <option value="equally" <%= split_mode == 'equally' ? 'selected' : '' %>>Equally</option>
         <option value="by_amount" <%= split_mode == 'by_amount' ? 'selected' : '' %>>By amount</option>
@@ -34,11 +34,12 @@
         <div>
           <div class="d-flex gap-2 align-items-center">
             <input type="hidden" name="expense_item[participants][][id]" value="<%= participant[:id] %>"/>
-            <input id="participant-<%= participant[:id] %>-enabled" data-id="<%= participant[:id] %>" type="checkbox" name="expense_item[participants][][enabled]" class="participant-enabled form-check mb-0" checked/>
+            <input id="participant-<%= participant[:id] %>-enabled" data-id="<%= participant[:id] %>" type="checkbox" name="expense_item[participants][][enabled]" class="participant-enabled form-check mb-0" <%= participant[:enabled] ? 'checked' : '' %>/>
             <label for="participant-<%= participant[:id] %>-enabled" class="form-label mb-0 flex-grow-1"><%= participant[:name] %></label>
 
             <div class="participant-input participant-input-amount">
-              <input type="text" name="expense_item[participants][][amount]" value="<%= participant[:amount] %>" readonly class="monetary-input enabled form-control form-control-plaintext form-control-sm text-end" style="width: 6rem"/>
+              <!--suppress HtmlFormInputWithoutLabel -->
+              <input type="text" name="expense_item[participants][][amount]" value="<%= participant[:amount] %>" readonly class="monetary-input form-control form-control-plaintext form-control-sm text-end" style="width: 6rem"/>
               <div>₫</div>
             </div>
           </div>
@@ -56,6 +57,11 @@
 
     const participantAmountInputs = $('.participant-input-amount input')
 
+    participantEnableCheckboxes
+      .filter(':checked')
+      .siblings('.participant-input-amount')
+      .find('input')
+      .addClass('enabled')
     updateAmountInputsAppearance()
     recalculateParticipantAmounts()
 
@@ -106,20 +112,9 @@
 
     function recalculateParticipantAmounts() {
       const mode = splitMethodSelect.val()
-      const enabledMap = {}
       const totalAmount = getMonetaryValue(amountInput)
 
-      for (let checkbox of participantEnableCheckboxes) {
-        checkbox = $(checkbox)
-        enabledMap[checkbox.data('id')] = {
-          id: checkbox.data('id'),
-          enabled: checkbox.prop('checked'),
-          amountInput: checkbox.siblings('.participant-input-amount').find('input')
-        }
-      }
-
       if (mode === 'equally') {
-        const amounts = []
         let amountLeft = totalAmount
         let enabledCount = participantAmountInputs.filter('.enabled').length
 
