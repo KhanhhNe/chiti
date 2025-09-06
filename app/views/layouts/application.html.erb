@@ -35,6 +35,8 @@
     <a class="back-link" href="<%= yield(:back_url) %>">
       <i class="bi bi-chevron-left fs-4"></i>
     </a>
+  <% else %>
+    <div></div>
   <% end %>
   <div class="fw-semibold text-center"><%= yield :title %></div>
   <div class="actions-dropdown" style="<%= content_for?(:actions) ? '' : 'visibility: hidden;' %>">
