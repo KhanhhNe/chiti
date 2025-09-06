@@ -28,8 +28,8 @@ class ExpenseItemsController < ApplicationController
   def update
     @expense_item = @expense_event.expense_items.find(params[:id])
 
-    validate_participants
-    validate_total_amount
+    return unless validate_participants
+    return unless validate_total_amount
 
     update_participants(@expense_item, participants_params)
 

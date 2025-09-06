@@ -2,7 +2,7 @@ module PreprocessParams
   def parse_monetary_number(value)
     return nil if value.blank?
 
-    value.to_s.gsub(/\D/, "").to_f
+    value.to_s.gsub(/[^0-9.]/, "").to_f
   end
 
   def update_hash_path!(hash, path, mapper)
