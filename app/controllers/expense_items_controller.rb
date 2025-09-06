@@ -11,11 +11,7 @@ class ExpenseItemsController < ApplicationController
   end
   def create
     @expense_item = @expense_event.expense_items.new(expense_item_params[:expense_item])
-
-    validate_participants
-    validate_total_amount
-
-    update_participants(@expense_item, participants_params)
+    @expense_item.update_participants(participants_params)
 
     @expense_item.save!
     flash.now[:notice] = "Expense item was successfully created."
@@ -31,12 +27,7 @@ class ExpenseItemsController < ApplicationController
   end
   def update
     @expense_item = @expense_event.expense_items.find(params[:id])
-    @expense_item.update(expense_item_params[:expense_item])
-
-    validate_participants
-    validate_total_amount
-
-    update_participants(@expense_item, participants_params)
+    @expense_item.update_participants(participants_params)
 
     @expense_item.save!
     flash.now[:notice] = "Expense item was successfully updated."
@@ -53,44 +44,6 @@ class ExpenseItemsController < ApplicationController
 
   private
 
-  def update_participants(expense_item, new_participants)
-    current_participants = expense_item.item_participants.to_a
-
-    new_participants.each do |participant|
-      event_participant_id = participant[:id]
-
-      item_participant = current_participants.find { |ip| ip.event_participant_id == event_participant_id }
-      if item_participant.present?
-        item_participant.amount = participant[:amount]
-      else
-        item_participant ||= ItemParticipant.new(
-          expense_event_id: expense_item.expense_event_id,
-          expense_item: expense_item,
-          event_participant_id: event_participant_id,
-          amount: participant[:amount]
-        )
-        expense_item.item_participants << item_participant
-      end
-    end
-  end
-
-  def validate_participants
-    participant_ids = @expense_event.event_participants.pluck(:id)
-    params_participant_ids = participants_params.map { |p| p[:id].to_i }
-
-    if params_participant_ids - participant_ids != []
-      raise ParamsValidationError.new("One or more participants are invalid.")
-    end
-  end
-
-  def validate_total_amount
-    total_amount = participants_params.sum { |p| p[:amount] }
-
-    if total_amount != expense_item_params[:expense_item][:amount]
-      raise ParamsValidationError.new("Total amount (#{total_amount}) does not equal to expense item amount (#{expense_item_params[:expense_item][:amount]}).")
-    end
-  end
-
   def expense_item_params; end
 
   dry_params :expense_item_params do
@@ -105,6 +58,13 @@ class ExpenseItemsController < ApplicationController
           optional(:enabled).filled(:checkbox)
           required(:amount).filled(:monetary)
         end
+      end
+    end
+
+    rule(:amount) do
+      participants_amount = values[:participants].sum { |p| p[:amount] }
+      if participants_amount != value
+        key.failure("must be equal to the sum of participants' amounts (#{participants_amount})")
       end
     end
   end
