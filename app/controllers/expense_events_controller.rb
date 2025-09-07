@@ -5,7 +5,7 @@ class ExpenseEventsController < ApplicationController
 
   def show
     @event = @current_user.expense_events.find(params[:id])
-    @items = @event.expense_items.includes(:paid_by => :user).order(:paid_on => :desc).group_by(&:paid_on)
+    @items = @event.expense_items.includes(paid_by: :user).order(paid_on: :desc).group_by(&:paid_on)
   end
 
   def new
@@ -53,14 +53,14 @@ class ExpenseEventsController < ApplicationController
       .item_participants
       .joins(:event_participant)
       .where(event_participants: { user: @current_user })
-      .select('SUM(item_participants.amount) as total_expense_amount')
-      .as_json.first['total_expense_amount'] || 0
+      .select("SUM(item_participants.amount) as total_expense_amount")
+      .as_json.first["total_expense_amount"] || 0
   end
 
   def total_expenses
     @event
       .item_participants
-      .select('SUM(item_participants.amount) as total_expense_amount')
-      .as_json.first['total_expense_amount'] || 0
+      .select("SUM(item_participants.amount) as total_expense_amount")
+      .as_json.first["total_expense_amount"] || 0
   end
 end

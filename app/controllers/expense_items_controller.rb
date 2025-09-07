@@ -35,7 +35,7 @@ class ExpenseItemsController < ApplicationController
   end
 
   def show
-    @expense_item = @expense_event.expense_items.includes(:item_participants => :event_participant).find(params[:id])
+    @expense_item = @expense_event.expense_items.includes(item_participants: :event_participant).find(params[:id])
   end
 
   def destroy
