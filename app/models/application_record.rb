@@ -4,7 +4,7 @@ class ApplicationRecord < ActiveRecord::Base
   def assign_attributes(new_attributes)
     valid_keys = [
       *self.class.column_names,
-      *self.class.reflections.keys,
+      *self.class.reflections.keys
     ].map(&:to_sym)
     valid_attributes = new_attributes.slice(*valid_keys)
     if valid_attributes.empty?
