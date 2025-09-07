@@ -68,12 +68,58 @@
       .on('input', _updateMonetaryDisplay)
   })
 
+  // Public functions
+  /**
+   * Ensures the given element is a jQuery object.
+   * @param elem
+   * @returns {jQuery}
+   */
   function ensureJquery(elem) {
     if (!elem) return elem
     return elem instanceof jQuery ? elem : $(elem)
   }
 
-  function formatMoney(value) {
+  /**
+   * Converts an iterable of elements into an array of jQuery objects.
+   * @param input
+   * @returns {jQuery[]}
+   */
+  function toJqueryArray(input) {
+    return [...input].map(ensureJquery)
+  }
+
+  /**
+   * Updates the monetary value of the given input element.
+   * @param input The input element (or jQuery object) to update.
+   * @param newValue The new monetary value (number).
+   * @param skipDisplayUpdate If true, skips updating the displayed value.
+   */
+  function updateMonetaryValue(input, newValue, skipDisplayUpdate = false) {
+    input = ensureJquery(input)
+
+    input.data('value', newValue)
+    input.val(_formatMoney(newValue))
+
+    if (!skipDisplayUpdate) {
+      _updateMonetaryDisplay.bind(input.get(0))()
+    }
+  }
+
+  /**
+   * Retrieves the monetary value from the given input element.
+   * @param input The input element (or jQuery object) to retrieve the value from.
+   * @returns {number} The monetary value as a float.
+   */
+  function getMonetaryValue(input) {
+    input = ensureJquery(input)
+    return parseFloat(input.val().replaceAll(/,/g, '') || '0')
+  }
+
+  // Functions intended for use in this file only
+  /**
+   * @private
+   */
+  function _formatMoney(value) {
     if (isNaN(value) || value == null) return '';
     if (value <= 0) return '0'
 
@@ -93,26 +139,9 @@
     return result
   }
 
-  function getMonetaryValue(input) {
-    input = ensureJquery(input)
-    return parseFloat(input.val().replaceAll(/,/g, '') || '0')
-  }
-
-  function toJqueryArray(input) {
-    return [...input].map(ensureJquery)
-  }
-
-  function updateMonetaryValue(input, newValue, skipDisplayUpdate = false) {
-    input = ensureJquery(input)
-
-    input.data('value', newValue)
-    input.val(formatMoney(newValue))
-
-    if (!skipDisplayUpdate) {
-      _updateMonetaryDisplay.bind(input.get(0))()
-    }
-  }
-
+  /**
+   * @private
+   */
   function _updateMonetaryDisplay() {
     const input = $(this)
     const stringValue = input.val()
@@ -126,7 +155,7 @@
       value = 0
     }
 
-    const formattedValue = formatMoney(value)
+    const formattedValue = _formatMoney(value)
 
     // Keep the cursor position the same (counted from end of string)
     const cursorOriginalOffset = stringValue.length - this.selectionStart
