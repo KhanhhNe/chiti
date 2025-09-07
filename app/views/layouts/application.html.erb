@@ -59,16 +59,71 @@
 
 <%= yield %>
 
+<div id="common-confirmation-modal" class="modal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-body">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="_emitModal(false)">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="_emitModal(true)">Confirm</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
+  // var is required here since Turbo re-initializes the script on every navigation
+  var modal = $('#common-confirmation-modal')
+  var confirmationModal = new bootstrap.Modal(modal.get(0), {backdrop: 'static', keyboard: false})
+
   $(function () {
     $('.monetary-input')
       .each(function () {
         _updateMonetaryDisplay.bind(this)()
       })
       .on('input', _updateMonetaryDisplay)
+
+    $(':submit[data-confirm]').on('click', function confirmBeforeSubmit(e) {
+      const button = $(this)
+      const message = button.data('confirm')
+
+      if (message) {
+        e.preventDefault()
+        e.stopPropagation()
+        getUserConfirmation(message).then((confirmed) => {
+          if (confirmed) {
+            button
+              .off('click', confirmBeforeSubmit)
+              .trigger('click')
+          }
+        })
+        return false
+      } else {
+        return true
+      }
+    })
   })
 
   // Public functions
+  /**
+   * Displays a confirmation modal with the given message and returns a promise that resolves to true if confirmed, false otherwise.
+   * @param message The confirmation message to display.
+   * @returns {Promise<boolean>} A promise that resolves to true if confirmed, false otherwise.
+   */
+  function getUserConfirmation(message) {
+    return new Promise((resolve) => {
+      modal.find('.modal-body').text(message)
+
+      modal.one('confirmation', (e, confirmed) => {
+        confirmationModal.hide()
+        resolve(confirmed)
+      })
+
+      confirmationModal.show()
+    })
+  }
+
   /**
    * Ensures the given element is a jQuery object.
    * @param elem
@@ -116,6 +171,13 @@
   }
 
   // Functions intended for use in this file only
+  /**
+   * @private
+   */
+  function _emitModal(confirmed) {
+    modal.trigger('confirmation', [confirmed])
+  }
+
   /**
    * @private
    */

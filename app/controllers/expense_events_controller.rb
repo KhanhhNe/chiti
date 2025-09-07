@@ -25,7 +25,7 @@ class ExpenseEventsController < ApplicationController
     end
 
     @event.save!
-    flash.now[:notice] = "Expense event was successfully created."
+    flash[:notice] = "Expense event was successfully created."
     redirect_to @event
   end
 

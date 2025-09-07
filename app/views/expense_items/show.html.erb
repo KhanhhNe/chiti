@@ -5,6 +5,11 @@
   <li>
     <a class="dropdown-item" href="<%= edit_expense_event_expense_item_path(@expense_item.expense_event_id, @expense_item) %>">Edit</a>
   </li>
+  <li>
+    <%= form_with url: expense_event_expense_item_url(@expense_item.expense_event_id, @expense_item) do |form| %>
+      <%= form.button "Delete", formmethod: :delete, data: { confirm: "⚠️ Are you sure want to delete item `#{@expense_item.name}`?" }, class: 'dropdown-item' %>
+    <% end %>
+  </li>
 <% end %>
 
 <div class="mb-4 fs-7 text-secondary text-center"><%= @expense_item.paid_on.strftime('%A, %e %B %Y') %></div>

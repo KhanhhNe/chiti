@@ -14,7 +14,7 @@ class ExpenseItemsController < ApplicationController
     @expense_item.update_participants(participants_params)
 
     @expense_item.save!
-    flash.now[:notice] = "Expense item was successfully created."
+    flash[:notice] = "Expense item was successfully created."
     redirect_to @expense_event
   end
 
@@ -30,12 +30,19 @@ class ExpenseItemsController < ApplicationController
     @expense_item.update_participants(participants_params)
 
     @expense_item.save!
-    flash.now[:notice] = "Expense item was successfully updated."
+    flash[:notice] = "Expense item was successfully updated."
     redirect_to @expense_item
   end
 
   def show
     @expense_item = @expense_event.expense_items.includes(:item_participants => :event_participant).find(params[:id])
+  end
+
+  def destroy
+    @expense_item = @expense_event.expense_items.find(params[:id])
+    @expense_item.destroy
+    flash[:notice] = "Expense item was successfully deleted."
+    redirect_to @expense_event
   end
 
   def expense_item_url(item)

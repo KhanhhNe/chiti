@@ -22,11 +22,11 @@ class ApplicationController < ActionController::Base
   rescue_from ParamsValidationError, ActiveRecord::ActiveRecordError do |exception|
     case exception
     in ParamsValidationError
-      flash.now[:errors] = exception.errors
+      flash[:errors] = exception.errors
     in ActiveRecord::ActiveRecordError
-      flash.now[:errors] = [exception.message]
+      flash[:errors] = [exception.message]
     else
-      flash.now[:errors] = ["An unexpected error occurred: #{exception.message} (class #{exception.class.name})"]
+      flash[:errors] = ["An unexpected error occurred: #{exception.message} (class #{exception.class.name})"]
     end
 
     if @_rescue_render.blank?
