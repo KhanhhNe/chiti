@@ -15,4 +15,8 @@ end)
 
 def checkbox; end
 
-Dry::Types.register('params.checkbox', Types::Params::Bool.constructor { |value| value == "on" })
+Dry::Types.register('params.checkbox', Types::Nominal::Bool.constructor { |value| value == "on" })
+
+def non_empty_values_array; end
+
+Dry::Types.register('params.non_empty_values_array', Types::Array.constructor { |arr| arr.reject(&:blank?) })

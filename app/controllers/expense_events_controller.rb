@@ -12,27 +12,34 @@ class ExpenseEventsController < ApplicationController
     @event = ExpenseEvent.new
   end
 
+  rescue_render :create do
+    @event = ExpenseEvent.new(params[:expense_event].to_unsafe_h)
+    render :new, status: :unprocessable_entity
+  end
   def create
-    @event = ExpenseEvent.new(event_params.slice(:name))
+    @event = ExpenseEvent.new(event_params[:expense_event])
     @event.users << @current_user
 
-    participant_names = event_params[:participant_names].filter_map { |name| name.strip.presence }
-    participant_names.each do |participant_name|
+    event_params[:expense_event][:participant_names].each do |participant_name|
       @event.event_participants << EventParticipant.new(name: participant_name)
     end
 
-    if @event.save
-      redirect_to @event, notice: "Expense event was successfully created."
-    else
-      flash.now[:errors] = @event.errors.full_messages
-      render :new, status: :unprocessable_entity
-    end
+    @event.save!
+    flash.now[:notice] = "Expense event was successfully created."
+    redirect_to @event
   end
 
   private
 
-  def event_params
-    params.expect(expense_event: [:name, participant_names: []])
+  def event_params; end
+
+  dry_params :event_params do
+    params do
+      required(:expense_event).hash do
+        required(:name).filled(:string)
+        required(:participant_names).maybe(:non_empty_values_array)
+      end
+    end
   end
 
   helper_method :unsafe_participant_names, :total_my_expenses, :total_expenses
