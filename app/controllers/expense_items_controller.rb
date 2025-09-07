@@ -68,8 +68,8 @@ class ExpenseItemsController < ApplicationController
       end
     end
 
-    rule(:amount) do
-      participants_amount = values[:participants].sum { |p| p[:amount] }
+    rule(expense_item: :amount) do
+      participants_amount = values[:expense_item][:participants].sum { |p| p[:amount] }
       if participants_amount != value
         key.failure("must be equal to the sum of participants' amounts (#{participants_amount})")
       end
