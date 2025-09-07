@@ -1,0 +1,208 @@
+<div class="d-flex flex-column gap-4">
+  <div>
+    <%= form.label :name, "Title", class: 'form-label ps-3 fs-6 fw-semibold' %>
+    <%= form.text_field :name, required: true, placeholder: 'E.g. Drinks', class: 'form-control' %>
+  </div>
+
+  <div>
+    <%= form.label :amount, "Amount", class: 'form-label ps-3 fs-6 fw-semibold' %>
+    <%= form.text_field :amount, required: true, placeholder: '0', max_value_length: 9, class: 'monetary-input form-control' %>
+  </div>
+
+  <div class="d-flex gap-2">
+    <div class="w-50">
+      <%= form.label :paid_by_id, "Paid by", class: 'form-label ps-3 fs-6 fw-semibold' %>
+      <%= form.select :paid_by_id, participants.map { |p| [p[:name], p[:id]] }, {}, { class: 'form-select' } %>
+    </div>
+    <div class="w-50">
+      <%= form.label :paid_on, "When", class: 'form-label ps-3 fs-6 fw-semibold' %>
+      <%= form.date_field :paid_on, class: 'form-control' %>
+    </div>
+  </div>
+
+  <div>
+    <div class="pb-2 d-flex justify-content-between align-items-center">
+      <label for=split-method class="form-label ps-3 mb-0 fs-6 fw-semibold">Split</label>
+      <select id="split-method" class="form-select form-select-sm w-auto">
+        <option value="equally" <%= split_mode == 'equally' ? 'selected' : '' %>>Equally</option>
+        <option value="by_amount" <%= split_mode == 'by_amount' ? 'selected' : '' %>>By amount</option>
+      </select>
+    </div>
+
+    <div class="participants-list">
+      <% participants.each do |participant| %>
+        <div>
+          <div class="d-flex gap-2 align-items-center">
+            <input type="hidden" name="expense_item[participants][][id]" value="<%= participant[:id] %>"/>
+            <input id="participant-<%= participant[:id] %>-enabled" data-id="<%= participant[:id] %>" type="checkbox" name="expense_item[participants][][enabled]" class="participant-enabled form-check mb-0" <%= participant[:enabled] ? 'checked' : '' %>/>
+            <label for="participant-<%= participant[:id] %>-enabled" class="form-label mb-0 flex-grow-1"><%= participant[:name] %></label>
+
+            <div class="participant-input participant-input-amount">
+              <!--suppress HtmlFormInputWithoutLabel -->
+              <input type="text" name="expense_item[participants][][amount]" value="<%= participant[:amount] %>" readonly class="monetary-input form-control form-control-plaintext form-control-sm text-end" style="width: 6rem"/>
+              <div>₫</div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+  $(function () {
+    const amountInput = $('#expense_item_amount');
+    const splitMethodSelect = $('#split-method');
+    const participantEnableCheckboxes = $('.participants-list .participant-enabled');
+
+    const participantAmountInputs = $('.participant-input-amount input')
+
+    participantEnableCheckboxes
+      .filter(':checked')
+      .siblings('.participant-input-amount')
+      .find('input')
+      .addClass('enabled')
+    updateAmountInputsAppearance()
+    recalculateParticipantAmounts()
+
+    // Update amounts inputs when total amount changes
+    amountInput.on('input', function () {
+      recalculateParticipantAmounts()
+
+      // Disable submit button if amount is zero
+      $('input[type=submit]').prop('disabled', $(this).data('value') === 0)
+    })
+
+    // Recalculate amounts when split method changes
+    splitMethodSelect.on('change', function () {
+      updateAmountInputsAppearance()
+      recalculateParticipantAmounts()
+    })
+
+    // Recalculate amounts when participant enabled/disabled
+    participantEnableCheckboxes.on('change', function () {
+      $(this).siblings('.participant-input-amount')
+        .find('input')
+        .toggleClass('enabled', $(this).prop('checked'))
+
+      updateAmountInputsAppearance()
+      recalculateParticipantAmounts()
+    })
+
+    // Recalculate amounts when participant amount changes
+    participantAmountInputs.on('input', recalculateParticipantAmounts)
+
+    function updateAmountInputsAppearance() {
+      const mode = splitMethodSelect.val()
+
+      if (mode === 'equally') {
+        toggleInput(participantAmountInputs, false)
+
+      } else if (mode === 'by_amount') {
+        toggleInput(participantAmountInputs.filter(':not(.enabled)'), false)
+
+        const enabledInputs = participantAmountInputs.filter('.enabled')
+        toggleInput(enabledInputs, true)
+
+        if (enabledInputs.length > 1) {
+          toggleInput(enabledInputs.last(), false)
+        }
+      }
+    }
+
+    function recalculateParticipantAmounts() {
+      const mode = splitMethodSelect.val()
+      const totalAmount = getMonetaryValue(amountInput)
+
+      if (mode === 'equally') {
+        let amountLeft = totalAmount
+        let enabledCount = participantAmountInputs.filter('.enabled').length
+
+        for (const input of participantAmountInputs) {
+          if ($(input).hasClass('enabled')) {
+            // Make sure integer division is handled correctly
+            // and remainder are spread out (not accumulated to the last participant)
+            const amount = Math.floor(amountLeft / enabledCount)
+            amountLeft -= amount
+            enabledCount -= 1
+
+            updateMonetaryValue(input, amount)
+          } else {
+            updateMonetaryValue(input, 0)
+          }
+        }
+      } else if (mode === 'by_amount') {
+        let amountLeft = totalAmount
+
+        for (const input of participantAmountInputs) {
+          if ($(input).hasClass('enabled')) {
+            const isCalculated = $(input).prop('readonly')
+
+            if (!isCalculated) {
+              let value = Math.min(getMonetaryValue(input), amountLeft)
+              amountLeft -= value
+
+              updateMonetaryValue(input, value)
+            } else {
+              updateMonetaryValue(input, amountLeft)
+            }
+          } else {
+            updateMonetaryValue(input, 0)
+          }
+        }
+      }
+    }
+
+    function toggleInput(input, enabled) {
+      ensureJquery(input)?.prop('readonly', !enabled)
+        .toggleClass('form-control-plaintext', !enabled)
+    }
+  })
+</script>
+
+<style>
+  .participants-list {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .participants-list > div {
+    background-color: var(--bs-light);
+  }
+
+  .participants-list > div:first-child {
+    border-top-left-radius: 0.5rem;
+    border-top-right-radius: 0.5rem;
+  }
+
+  .participants-list > div:last-child {
+    border-bottom-left-radius: 0.5rem;
+    border-bottom-right-radius: 0.5rem;
+  }
+
+  .participants-list > div > div {
+    margin-left: 1rem;
+    margin-right: 1rem;
+    padding-top: 0.35rem;
+    padding-bottom: 0.35rem;
+  }
+
+  .participants-list > div:not(:last-child) > div {
+    border-bottom: 1px solid var(--bs-dark-bg-subtle);
+  }
+
+  .participant-input {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .participant-enabled {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .participant-input-amount input:not(.enabled) {
+    opacity: 0.25;
+  }
+</style>
