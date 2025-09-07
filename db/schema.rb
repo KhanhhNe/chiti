@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_08_31_134426) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_07_062129) do
   create_table "event_participants", force: :cascade do |t|
     t.integer "user_id"
     t.integer "expense_event_id", null: false
@@ -40,14 +40,12 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_31_134426) do
   end
 
   create_table "item_participants", force: :cascade do |t|
-    t.integer "expense_event_id", null: false
     t.integer "expense_item_id", null: false
     t.integer "event_participant_id", null: false
     t.float "amount", default: 0.0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["event_participant_id"], name: "index_item_participants_on_event_participant_id"
-    t.index ["expense_event_id"], name: "index_item_participants_on_expense_event_id"
     t.index ["expense_item_id"], name: "index_item_participants_on_expense_item_id"
   end
 
@@ -74,7 +72,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_31_134426) do
   add_foreign_key "expense_items", "event_participants", column: "paid_by_id"
   add_foreign_key "expense_items", "expense_events"
   add_foreign_key "item_participants", "event_participants"
-  add_foreign_key "item_participants", "expense_events"
   add_foreign_key "item_participants", "expense_items"
   add_foreign_key "sessions", "users"
 end
