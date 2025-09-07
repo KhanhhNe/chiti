@@ -17,4 +17,9 @@ Rails.application.routes.draw do
   resources :expense_events do
     resources :expense_items
   end
+
+  direct :expense_item do |model|
+    # noinspection RubyResolve
+    expense_event_expense_item_url(model.expense_event_id, model)
+  end
 end

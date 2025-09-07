@@ -45,10 +45,6 @@ class ExpenseItemsController < ApplicationController
     redirect_to @expense_event
   end
 
-  def expense_item_url(item)
-    expense_event_expense_item_url(item.expense_event_id, item)
-  end
-
   private
 
   def expense_item_params; end
