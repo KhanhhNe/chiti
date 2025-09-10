@@ -4,6 +4,11 @@
   <li>
     <a href="<%= edit_expense_event_url(@event) %>" class="dropdown-item">Edit</a>
   </li>
+  <li>
+    <%= form_with model: @event do |form| %>
+      <%= form.button "Delete", formmethod: :delete, data: { confirm: "⚠️ Are you sure want to delete event `#{@event.name}`?" }, class: 'dropdown-item' %>
+    <% end %>
+  </li>
 <% end %>
 
 <div class="d-flex justify-content-around mb-4 text-center">

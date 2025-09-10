@@ -61,6 +61,13 @@ class ExpenseEventsController < ApplicationController
     redirect_to @event
   end
 
+  def destroy
+    @event = @current_user.expense_events.find(params[:id])
+    @event.destroy
+    flash[:notice] = "Expense event was successfully deleted."
+    redirect_to expense_events_path
+  end
+
   private
 
   def event_params; end
