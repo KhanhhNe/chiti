@@ -64,3 +64,5 @@ end
 
 gem "dry-validation", "~> 1.11"
 gem "dry-types"
+
+gem "devise", "~> 4.9"

@@ -9,13 +9,13 @@
 
     <div id="participants-list" class="input-group-column">
       <div class="participant-input d-flex w-100">
-        <input class="form-control" value="<%= @current_user.name %> (Me)" disabled>
+        <input class="form-control" value="<%= current_user.name %> (Me)" disabled>
         <button type="button" class="btn btn-sm invisible">
           <i class="bi bi-x-circle-fill"></i>
         </button>
       </div>
       <% (@participants_info.presence || [{ name: '' }]).each do |participant| %>
-        <% next if participant[:user_id] == @current_user.id %>
+        <% next if participant[:user_id] == current_user.id %>
 
         <div class="participant-input d-flex w-100">
           <input type="hidden" name="expense_event[participants_info][][readonly]" value="<%= participant[:readonly] ? 'on' : 'off' %>">

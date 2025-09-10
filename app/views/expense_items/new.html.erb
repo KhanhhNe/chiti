@@ -1,7 +1,7 @@
 <% content_for :title, 'Add expense' %>
-<% content_for :back_url, expense_event_url(params[:expense_event_id]) %>
+<% content_for :back_url, url_for(@expense_event) %>
 
-<%= form_with model: @expense_item do |form| %>
+<%= form_with model: @expense_item, url: expense_event_expense_items_url(@expense_event) do |form| %>
   <%= render partial: 'item_details_form', locals: { form: form, split_mode: 'equally' } %>
 
   <%= form.submit "Add expense", disabled: (@expense_item.amount || 0) <= 0, class: 'btn btn-primary w-100 mt-4' %>

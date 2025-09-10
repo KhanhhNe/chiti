@@ -1,5 +1,5 @@
 class ExpenseItemsController < ApplicationController
-  before_action -> { @expense_event = @current_user.expense_events.find(params[:expense_event_id]) }
+  before_action -> { @expense_event = current_user.expense_events.find(params[:expense_event_id]) }
 
   def new
     @expense_item = @expense_event.expense_items.new(paid_on: Date.today)
@@ -91,7 +91,7 @@ class ExpenseItemsController < ApplicationController
       participant_param = participant_params.find { |pp| pp[:id].to_i == participant.id }
 
       name = participant.participant_name || "Unknown"
-      name = "#{name} (Me)" if participant.user_id == @current_user.id
+      name = "#{name} (Me)" if participant.user_id == current_user.id
       {
         id: participant.id,
         name: name,

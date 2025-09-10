@@ -19,7 +19,7 @@
   <div class="px-3 py-2 d-flex justify-content-between align-items-center rounded rounded-2 bg-light">
     <div>
       <div><%= @expense_item.paid_by.participant_name %></div>
-      <% if @expense_item.paid_by.user == @current_user %>
+      <% if @expense_item.paid_by.user == current_user %>
         <div class="fs-7 text-secondary">Me</div>
       <% end %>
     </div>
@@ -35,7 +35,7 @@
       <div class="px-3 py-2 d-flex justify-content-between align-items-center rounded rounded-2 bg-light">
         <div class="d-flex flex-column justify-content-center" style="height: 2.75rem">
           <div><%= participant.event_participant.participant_name %></div>
-          <% if participant.event_participant.user == @current_user %>
+          <% if participant.event_participant.user == current_user %>
             <div class="fs-7 text-secondary">Me</div>
           <% end %>
         </div>

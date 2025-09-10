@@ -35,8 +35,8 @@ class ApplicationController < ActionController::Base
     instance_exec exception, &@_rescue_render
   end
 
-  protect_from_forgery with: :exception
-
+  protect_from_forgery with: :exception, prepend: true
+  before_action :configure_permitted_parameters, if: :devise_controller?
   # Only allow modern browsers supporting webp images, web push, badges, import maps, CSS nesting, and CSS :has.
   allow_browser versions: { ie: false }
 
@@ -71,5 +71,11 @@ class ApplicationController < ActionController::Base
 
       result.to_h
     end
+  end
+
+  protected
+
+  def configure_permitted_parameters
+    devise_parameter_sanitizer.permit(:sign_up, keys: [:name])
   end
 end
