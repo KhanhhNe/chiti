@@ -49,24 +49,6 @@
   </div>
 </div>
 
-<% if flash[:notice].present? %>
-  <div style="background-color: green; color: white; padding: 10px; margin: 10px 0;">
-    <%= flash[:notice] %>
-  </div>
-<% end %>
-<% if flash[:alert].present? %>
-  <div style="background-color: orange; color: black; padding: 10px; margin: 10px 0;">
-    <%= flash[:alert] %>
-  </div>
-<% end %>
-<% if flash[:errors].present? %>
-  <% Array(flash[:errors]).each do |error| %>
-    <div style="background-color: red; color: white; padding: 10px; margin: 10px 0;">
-      <%= error %>
-    </div>
-  <% end %>
-<% end %>
-
 <%= yield %>
 
 <div id="common-confirmation-modal" class="modal" tabindex="-1">
@@ -80,6 +62,22 @@
       </div>
     </div>
   </div>
+</div>
+
+<div class="m-4 toast-container" style="right: 0; bottom: 0;">
+  <% %w[alert notice errors].each do |flash_type| %>
+    <% next if flash[flash_type].blank? %>
+
+    <% Array(flash[flash_type]).each do |msg| %>
+      <% bg_color = { alert: 'text-bg-warning', notice: 'text-bg-primary', errors: 'text-bg-danger' }[flash_type.to_sym] %>
+      <div class="mb-2 toast align-items-center <%= bg_color %> border-0">
+        <div class="d-flex">
+          <div class="toast-body"><%= msg %></div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
 </div>
 
 <script>
@@ -112,7 +110,9 @@
       } else {
         return true
       }
-    })
+    });
+
+    [...$('.toast')].map(toastEl => new bootstrap.Toast(toastEl).show())
   })
 
   // Public functions
