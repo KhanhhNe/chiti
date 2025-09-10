@@ -1,0 +1,62 @@
+<div class="d-flex flex-column gap-4">
+  <div>
+    <%= form.label :name, "Event name", class: 'form-label ps-3 fs-6 fw-semibold' %>
+    <%= form.text_field :name, required: true, placeholder: 'E.g. City Trip', class: 'form-control' %>
+  </div>
+
+  <div>
+    <%= form.label :participants, "Participants", onclick: "$('#participants-list input').first().focus()", class: 'form-label ps-3 fs-6 fw-semibold' %>
+
+    <div id="participants-list" class="input-group-column">
+      <div class="participant-input d-flex w-100">
+        <input class="form-control" value="<%= @current_user.name %> (Me)" disabled>
+        <button type="button" class="btn btn-sm invisible">
+          <i class="bi bi-x-circle-fill"></i>
+        </button>
+      </div>
+      <% (@participants_info.presence || [{ name: '' }]).each do |participant| %>
+        <% next if participant[:user_id] == @current_user.id %>
+
+        <div class="participant-input d-flex w-100">
+          <input type="hidden" name="expense_event[participants_info][][readonly]" value="<%= participant[:readonly] ? 'on' : 'off' %>">
+          <input
+            type="text"
+            name="expense_event[participants_info][][name]"
+            value="<%= participant[:name] %>"
+            class="form-control participant-name <%= participant[:readonly] ? 'disabled' : '' %>"
+            <%= participant[:readonly] ? 'readonly' : '' %>
+            placeholder="Participant name"
+          >
+          <button type="button" onclick="$(this).parent('.participant-input').remove()" class="btn btn-sm <%= participant[:readonly] ? 'invisible' : '' %> %>">
+            <i class="bi bi-x-circle-fill"></i>
+          </button>
+        </div>
+      <% end %>
+    </div>
+
+    <%= button_tag "Add participant", type: 'button', id: 'add-participant', class: 'btn btn-link' %>
+  </div>
+</div>
+
+<script type="text/javascript">
+  $(function () {
+    const addParticipantBtn = $('#add-participant')
+    const participantsList = $('#participants-list')
+
+    addParticipantBtn.click(function () {
+      const input = participantsList.find('.participant-input').last().clone(true)
+      input.find('input[name*=readonly]').val('off')
+      input.find('input[name*=name]').val('').removeClass('disabled').prop('readonly', false)
+      input.find('button').removeClass('invisible')
+      participantsList.append(input)
+
+      input.find('input.participant-name').focus()
+    })
+  })
+</script>
+
+<style>
+  #participants-list .participant-input:first-child button {
+    visibility: hidden;
+  }
+</style>

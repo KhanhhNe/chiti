@@ -34,3 +34,16 @@ input:focus {
 .fs-7 {
   font-size: 0.875rem;
 }
+
+.form-control.disabled {
+  background-color: var(--bs-secondary-bg);
+  opacity: 1;
+  cursor: default;
+}
+
+.form-control.disabled:focus {
+  background-color: var(--bs-secondary-bg);
+  border-color: var(--bs-border-color);
+  outline: none;
+  box-shadow: none;
+}

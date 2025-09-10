@@ -1,0 +1,8 @@
+<% content_for :title, 'Edit event' %>
+<% content_for :back_url, url_for(@event) %>
+
+<%= form_with method: :put, model: @event do |form| %>
+  <%= render partial: 'expense_events/event_details_form', locals: { form: } %>
+
+  <%= form.submit "Update event", class: 'mt-4 btn btn-primary w-100' %>
+<% end %>

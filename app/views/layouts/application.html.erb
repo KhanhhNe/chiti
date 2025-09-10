@@ -49,8 +49,18 @@
   </div>
 </div>
 
+<% if flash[:notice].present? %>
+  <div style="background-color: green; color: white; padding: 10px; margin: 10px 0;">
+    <%= flash[:notice] %>
+  </div>
+<% end %>
+<% if flash[:alert].present? %>
+  <div style="background-color: orange; color: black; padding: 10px; margin: 10px 0;">
+    <%= flash[:alert] %>
+  </div>
+<% end %>
 <% if flash[:errors].present? %>
-  <% flash[:errors].each do |error| %>
+  <% Array(flash[:errors]).each do |error| %>
     <div style="background-color: red; color: white; padding: 10px; margin: 10px 0;">
       <%= error %>
     </div>

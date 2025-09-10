@@ -17,6 +17,6 @@ def checkbox; end
 
 Dry::Types.register("params.checkbox", Types::Nominal::Bool.constructor { |value| value == "on" })
 
-def non_empty_values_array; end
+def stripped_string; end
 
-Dry::Types.register("params.non_empty_values_array", Types::Array.constructor { |arr| arr.reject(&:blank?) })
+Dry::Types.register("params.stripped_string", Types::Nominal::String.constructor(&:strip))

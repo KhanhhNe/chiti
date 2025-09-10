@@ -9,6 +9,7 @@ class ExpenseItemsController < ApplicationController
     @expense_item = @expense_event.expense_items.new(params[:expense_item].to_unsafe_h)
     render :new, status: :unprocessable_entity
   end
+
   def create
     @expense_item = @expense_event.expense_items.new(expense_item_params[:expense_item])
     @expense_item.update_participants(participants_params)
@@ -25,6 +26,7 @@ class ExpenseItemsController < ApplicationController
   rescue_render :update do
     render :edit, status: :unprocessable_entity
   end
+
   def update
     @expense_item = @expense_event.expense_items.find(params[:id])
     @expense_item.update_participants(participants_params)
@@ -52,7 +54,7 @@ class ExpenseItemsController < ApplicationController
   dry_params :expense_item_params do
     params do
       required(:expense_item).hash do
-        required(:name).filled(:string)
+        required(:name).filled(:stripped_string)
         required(:amount).filled(:monetary)
         required(:paid_by_id).filled(:integer)
         required(:paid_on).filled(:date)

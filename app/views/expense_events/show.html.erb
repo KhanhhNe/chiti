@@ -1,5 +1,10 @@
 <% content_for :title, @event.name %>
 <% content_for :back_url, expense_events_url %>
+<% content_for :actions do %>
+  <li>
+    <a href="<%= edit_expense_event_url(@event) %>" class="dropdown-item">Edit</a>
+  </li>
+<% end %>
 
 <div class="d-flex justify-content-around mb-4 text-center">
   <div>
