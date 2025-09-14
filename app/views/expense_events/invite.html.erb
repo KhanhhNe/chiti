@@ -2,10 +2,10 @@
 <% content_for :back_url, url_for(@event) %>
 
 <div class="mt-5 d-flex flex-column justify-content-center align-items-center gap-4">
-  <div id="invite-url-qr" data-url="<%= @event.accept_invite_url %>"></div>
+  <div id="invite-url-qr" data-url="<%= @event.invitation_url %>"></div>
   <div>Share above QR code to invite others</div>
   <div class="d-flex gap-2">
-    <input readonly value="<%= @event.accept_invite_url %>" class="form-control flex-grow-1 text-center w-75" onclick="this.select()"/>
+    <input readonly value="<%= @event.invitation_url %>" class="form-control flex-grow-1 text-center w-75" onclick="this.select()"/>
     <button id="copy-link-button" type="button" class="btn btn-sm btn-primary"><i class="bi bi-clipboard"></i></button>
   </div>
 </div>

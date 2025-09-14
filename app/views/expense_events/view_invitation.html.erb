@@ -1,0 +1,38 @@
+<% content_for :title, @event.name %>
+
+<div class="fs-4 fw-semibold">You've been invited to join!</div>
+<div>Join now with others to view and add expenses</div>
+
+<%= form_with method: :post, url: @event.invitation_url do |form| %>
+  <div class="mt-4">
+    <div class="fs-5 mb-2">You are...</div>
+
+    <% @event.event_participants.each do |participant| %>
+      <div class="form-check">
+        <input
+          type="radio"
+          name="participant_id"
+          value="<%= participant.id %>"
+          id="participant-<%= participant.id %>"
+          <%= participant.user_id.present? ? 'disabled' : '' %>
+          <%= participant.id == params[:participant_id].to_i ? 'checked' : '' %>
+          class="form-check-input"
+        >
+        <label class="form-check-label" for="participant-<%= participant.id %>">
+          <%= participant.participant_name %>
+        </label>
+      </div>
+    <% end %>
+  </div>
+  <%= form.submit "Join Event", class: "btn btn-primary mt-4 w-100", id: "join-event-button", disabled: params[:participant_id].blank? %>
+<% end %>
+
+<script>
+  $(function () {
+    const joinButton = $('#join-event-button')
+
+    $('input[name=participant_id]').on('change', function () {
+      joinButton.prop('disabled', false)
+    })
+  })
+</script>

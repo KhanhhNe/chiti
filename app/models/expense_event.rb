@@ -9,8 +9,8 @@ class ExpenseEvent < ApplicationRecord
 
   after_initialize { self.hash_key ||= Digest::MD5.hexdigest(Random.random_number.to_s)[0..7] }
 
-  def accept_invite_url
-    Rails.application.routes.url_helpers.accept_invite_url(
+  def invitation_url
+    Rails.application.routes.url_helpers.view_invitation_url(
       name: name.parameterize, hash_key: hash_key
     )
   end

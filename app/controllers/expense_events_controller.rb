@@ -74,6 +74,40 @@ class ExpenseEventsController < ApplicationController
     render :invite
   end
 
+  def view_invitation
+    @event = ExpenseEvent.includes(event_participants: :user).find_by!(hash_key: params[:hash_key])
+
+    if @event.users.include?(current_user)
+      flash[:notice] = "You are already a member of this expense event."
+      redirect_to @event
+    end
+
+    render :view_invitation
+  rescue ActiveRecord::RecordNotFound
+    flash[:errors] = "Invalid invite token."
+    redirect_to root_url
+  end
+
+  rescue_render :accept_invitation do
+    @event = ExpenseEvent.find_by!(hash_key: params[:hash_key])
+    render :view_invitation, status: :unprocessable_entity
+  end
+
+  def accept_invitation
+    @event = ExpenseEvent.find_by!(hash_key: params[:hash_key])
+    @participant = @event.event_participants.find(params[:participant_id])
+    if @participant.user_id.present?
+      raise ActiveRecord::RecordInvalid, "This participant has already been claimed."
+    end
+
+    @participant.update!(user: current_user)
+    flash[:notice] = "You have successfully joined the expense event."
+    redirect_to @event
+  rescue ActiveRecord::RecordNotFound
+    flash[:alert] = "Invalid invite token."
+    redirect_to expense_events_path
+  end
+
   private
 
   def event_params; end
@@ -91,6 +125,15 @@ class ExpenseEventsController < ApplicationController
 
     rule(expense_event: :participants_info) do
       key.failure("participant name must be present") if value.any? { |p| p[:name].empty? }
+    end
+  end
+
+  def accept_invitation_params; end
+
+  dry_params :accept_invitation_params do
+    params do
+      required(:hash_key).filled(:stripped_string)
+      required(:participant_id).filled(:integer)
     end
   end
 

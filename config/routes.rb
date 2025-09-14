@@ -21,7 +21,8 @@ Rails.application.routes.draw do
     resources :expense_items
   end
 
-  get "/invite/:name/:hash_key", to: "expense_events#accept_invite", as: :accept_invite
+  get "/invite/:name/:hash_key", to: "expense_events#view_invitation", as: :view_invitation
+  post "/invite/:name/:hash_key", to: "expense_events#accept_invitation", as: :accept_invitation
 
   direct :expense_item do |model|
     # noinspection RubyResolve
