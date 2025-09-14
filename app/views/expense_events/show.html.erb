@@ -36,7 +36,7 @@
               <div class="flex flex-column gap-2 flex-grow-1">
                 <div><%= item.name %></div>
                 <div class="text-secondary fs-7 fw-semibold">
-                  <span class="fw-light">Paid by</span> <%= item.paid_by.participant_name %>
+                  <span class="fw-light">Paid by</span> <%= item.paid_by.participant_name %><%= item.paid_by.user == current_user ? ' (You)' : '' %>
                 </div>
               </div>
               <div class="fw-bolder"><%= format_monetary(item.amount) %></div>

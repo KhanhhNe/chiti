@@ -91,7 +91,7 @@ class ExpenseItemsController < ApplicationController
       participant_param = participant_params.find { |pp| pp[:id].to_i == participant.id }
 
       name = participant.participant_name || "Unknown"
-      name = "#{name} (Me)" if participant.user_id == current_user.id
+      name = "#{name} (You)" if participant.user_id == current_user.id
       {
         id: participant.id,
         name: name,

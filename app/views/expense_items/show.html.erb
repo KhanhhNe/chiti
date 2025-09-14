@@ -20,7 +20,7 @@
     <div>
       <div><%= @expense_item.paid_by.participant_name %></div>
       <% if @expense_item.paid_by.user == current_user %>
-        <div class="fs-7 text-secondary">Me</div>
+        <div class="fs-7 text-secondary">You</div>
       <% end %>
     </div>
     <div class="fw-semibold"><%= format_monetary(@expense_item.amount) %></div>
@@ -36,7 +36,7 @@
         <div class="d-flex flex-column justify-content-center" style="height: 2.75rem">
           <div><%= participant.event_participant.participant_name %></div>
           <% if participant.event_participant.user == current_user %>
-            <div class="fs-7 text-secondary">Me</div>
+            <div class="fs-7 text-secondary">You</div>
           <% end %>
         </div>
         <div class="fw-semibold"><%= format_monetary(participant.amount) %></div>
