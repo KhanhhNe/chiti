@@ -1,0 +1,38 @@
+<% content_for :title, 'Invite participants' %>
+<% content_for :back_url, url_for(@event) %>
+
+<div class="mt-5 d-flex flex-column justify-content-center align-items-center gap-4">
+  <div id="invite-url-qr" data-url="<%= @event.accept_invite_url %>"></div>
+  <div>Share above QR code to invite others</div>
+  <div class="d-flex gap-2">
+    <input readonly value="<%= @event.accept_invite_url %>" class="form-control flex-grow-1 text-center w-75" onclick="this.select()"/>
+    <button id="copy-link-button" type="button" class="btn btn-sm btn-primary"><i class="bi bi-clipboard"></i></button>
+  </div>
+</div>
+
+<script src="/qrcode.js"></script>
+<script>
+  $(function () {
+    const qrContainer = $('#invite-url-qr')
+    const url = qrContainer.data('url')
+
+    new QRCode(qrContainer[0], {
+      text: url,
+      width: 256,
+      height: 256,
+      colorDark: "#000000",
+      colorLight: "#ffffff",
+      correctLevel: QRCode.CorrectLevel.H
+    })
+
+    $('#copy-link-button').on('click', function () {
+      const url = $('input:read-only').val()
+      const btn = $(this)
+      navigator.clipboard.writeText(url)
+
+      btn.find('i').removeClass('bi-clipboard').addClass('bi-check')
+
+      setTimeout(() => btn.find('i').addClass('bi-clipboard').removeClass('bi-check'), 2000)
+    })
+  })
+</script>

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_10_072144) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_14_083951) do
   create_table "event_participants", force: :cascade do |t|
     t.integer "user_id"
     t.integer "expense_event_id", null: false
@@ -22,9 +22,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_10_072144) do
   end
 
   create_table "expense_events", force: :cascade do |t|
-    t.string "name"
+    t.string "name", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "hash_key", null: false
+    t.index ["hash_key"], name: "index_expense_events_on_hash_key", unique: true
   end
 
   create_table "expense_items", force: :cascade do |t|

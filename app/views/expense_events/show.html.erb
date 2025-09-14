@@ -2,6 +2,9 @@
 <% content_for :back_url, expense_events_url %>
 <% content_for :actions do %>
   <li>
+    <a href="<%= expense_event_invite_url(@event) %>" class="dropdown-item">Invite</a>
+  </li>
+  <li>
     <a href="<%= edit_expense_event_url(@event) %>" class="dropdown-item">Edit</a>
   </li>
   <li>

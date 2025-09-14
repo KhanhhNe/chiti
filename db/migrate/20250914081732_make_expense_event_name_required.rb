@@ -1,0 +1,5 @@
+class MakeExpenseEventNameRequired < ActiveRecord::Migration[8.0]
+  def change
+    change_column_null :expense_events, :name, false
+  end
+end

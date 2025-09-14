@@ -68,6 +68,12 @@ class ExpenseEventsController < ApplicationController
     redirect_to expense_events_path
   end
 
+  def invite
+    @event = current_user.expense_events.find(params[:expense_event_id])
+
+    render :invite
+  end
+
   private
 
   def event_params; end

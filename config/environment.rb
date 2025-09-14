@@ -3,3 +3,5 @@ require_relative "application"
 
 # Initialize the Rails application.
 Rails.application.initialize!
+
+Chiti::Application.default_url_options = Chiti::Application.config.action_mailer.default_url_options

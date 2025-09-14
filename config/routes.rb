@@ -16,8 +16,12 @@ Rails.application.routes.draw do
   root "expense_events#index"
 
   resources :expense_events do
+    get :invite
+
     resources :expense_items
   end
+
+  get "/invite/:name/:hash_key", to: "expense_events#accept_invite", as: :accept_invite
 
   direct :expense_item do |model|
     # noinspection RubyResolve
